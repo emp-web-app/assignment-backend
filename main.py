@@ -46,16 +46,6 @@ def show_origin():
 def index():
     return render_template("base.html")
 
-
-# TODO: Implement an API endpoint that returns a GeoJSON `FeatureCollection`.
-# Hint: You need to retrieve data from the database and convert it to GeoJSON format. We recommend using SQLAlchemy.
-# Hint: If you are not familiar with SQLAlchemy's ORM or ORMs in general, you may write SQL statements directly.
-
-# Hint: You can find models for SQLAlchemy in models.py.
-# Hint: The `Features` need to have a type of `LineString`.
-# Hint: For your reference, the converted GeoJSON should be look like the `geo_data` dictionary in geodata.py.
-# Hint: Backend URL should be like: https://instance-name.username.repl.co/geo
-
 engine = create_engine(
     "sqlite:///my_database", connect_args={"check_same_thread": False}
 )
