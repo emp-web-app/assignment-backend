@@ -1,0 +1,45 @@
+*.out
+*~
+*.pyc
+__pycache__
+*.so
+*.mod
+*.o
+build
+dist
+*.egg-info
+*__pycache__*
+venv
+
+
+/.idea
+venv/
+.venv
+__pycache__/
+
+# testing
+/coverage
+
+# ignore build directory during development
+/build
+
+
+# unignore build directory and files in it
+#!/build
+#!/build/*
+#!/build/**/*
+
+
+# misc
+.env
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ignore bulma tutorial
+/bulma-tutorial
+
+# VsCode
+.vscode
