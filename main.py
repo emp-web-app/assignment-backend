@@ -1,6 +1,6 @@
 ########################################################
 #             BACKEND ASSIGNMENT STARTS HERE
-# 
+#
 # All your assignment code instances must be removed from
 # the internet after your next interview, do not share
 # them with anyone.
@@ -8,7 +8,7 @@
 ########################################################
 
 import time
-from typing import Dict
+from typing import Dict, List, Tuple
 from flask import Flask, request, render_template, Response
 
 import sqlite3
@@ -28,22 +28,23 @@ app = Flask(__name__)
 
 origin = "https://<your-frontend-ID>.csb.app"
 
+
 @app.after_request
 def set_cors(response: Response) -> Response:
-  response.headers['Access-Control-Allow-Origin'] = origin
-  return response
+    response.headers["Access-Control-Allow-Origin"] = origin
+    return response
 
 
-@app.route('/origin')
+@app.route("/origin")
 def show_origin():
-  origin = request.headers.get('Origin')
-  print("origin:", origin)
-  return f'Access-Control-Allow-Origin: {origin}'
+    origin = request.headers.get("Origin")
+    print("origin:", origin)
+    return f"Access-Control-Allow-Origin: {origin}"
 
 
-@app.route('/')
+@app.route("/")
 def index():
-  return render_template("base.html")
+    return render_template("base.html")
 
 
 # TODO: Implement an API endpoint that returns a GeoJSON `FeatureCollection`.
@@ -55,19 +56,49 @@ def index():
 # Hint: For your reference, the converted GeoJSON should be look like the `geo_data` dictionary in geodata.py.
 # Hint: Backend URL should be like: https://instance-name.username.repl.co/geo
 
-engine = create_engine('sqlite:///my_database',
-                       connect_args={'check_same_thread': False})
+engine = create_engine(
+    "sqlite:///my_database", connect_args={"check_same_thread": False}
+)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# def read() -> Dict:
-#   project_id_query = session.query(.....
-#   # #....
-#   return result
 
-# @app.route("/geo", methods=['GET'])
-# def geo() -> GeoJSON:
-#   ......
-# return GeoJSON(result)
+def read() -> Dict:
+    result = (
+        session.query(
+            Category.cat,
+            Line.project_id,
+            Line.longitude,
+            Line.latitude,
+        )
+        .join(Category, Line.id == Category.line_id)
+        .all()
+    )
 
-app.run(host='0.0.0.0', port=81)
+    cat_proj_map: Dict[Tuple[int, int], List[Tuple[float, float]]] = {}
+
+    for row in result:
+        if (row.cat, row.project_id) not in cat_proj_map:
+            cat_proj_map[(row.cat, row.project_id)] = []
+
+        cat_proj_map[row.cat, row.project_id].append([row.longitude, row.latitude])
+
+    return FeatureCollection(
+        [
+            Feature(
+                properties={"cat": cat, "project_id": project_id},
+                geometry=LineString(coordinates=cat_proj_map[cat, project_id]),
+            )
+            for cat, project_id in cat_proj_map
+        ]
+    )
+
+
+@app.route("/geo", methods=["GET"])
+def geo() -> GeoJSON:
+
+    return GeoJSON(read())
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=81)
